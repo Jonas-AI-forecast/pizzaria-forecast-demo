@@ -22,7 +22,7 @@ st.markdown(f"### 🌦️ Aktuelt vejr i Glostrup: **{temp:.1f}°C** – *{beskr
 
 # === Hent 14-dages forecast fra API ===
 with st.spinner("Henter forecast fra AI..."):
-    res = requests.get("https://pizzaria-backend-fghionrender.onrender.com/pizza-forecast-14d")
+    res = requests.get("https://pizzaria-backend-fghi.onrender.com/pizza-forecast-14d")
     data = res.json()
     df = pd.DataFrame(data)
 
