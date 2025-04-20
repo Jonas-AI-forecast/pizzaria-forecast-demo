@@ -5,12 +5,6 @@ import requests
 from datetime import datetime
 import locale
 
-# Forsøg at sætte dansk datoformat – fallback til engelsk hvis det fejler (fx på Render)
-# Prøv dansk sprog - ellers brug engelsk fallback (Render tillader ikke "da_DK.UTF-8")
-try:
-    locale.setlocale(locale.LC_TIME, "da_DK.UTF-8")
-except locale.Error:
-    locale.setlocale(locale.LC_TIME, "en_US.UTF-8")
 
 
 st.set_page_config(layout="wide")
@@ -28,7 +22,23 @@ except:
 
 df = pd.DataFrame(data)
 df["dato"] = pd.to_datetime(df["dato"])
-df["dag_navn"] = df["dato"].dt.strftime("%A %d. %B")
+# Manuelt oversæt ugedage og måneder til dansk
+danske_ugedage = {
+    "Monday": "Mandag", "Tuesday": "Tirsdag", "Wednesday": "Onsdag",
+    "Thursday": "Torsdag", "Friday": "Fredag", "Saturday": "Lørdag", "Sunday": "Søndag"
+}
+
+danske_måneder = {
+    "January": "januar", "February": "februar", "March": "marts", "April": "april",
+    "May": "maj", "June": "juni", "July": "juli", "August": "august",
+    "September": "september", "October": "oktober", "November": "november", "December": "december"
+}
+
+df["dato"] = pd.to_datetime(df["dato"])
+df["dag_eng"] = df["dato"].dt.day_name()
+df["måned_eng"] = df["dato"].dt.month_name()
+df["dansk_dato"] = df["dag_eng"].map(danske_ugedage) + " d. " + df["dato"].dt.strftime("%d") + ". " + df["måned_eng"].map(danske_måneder)
+
 df["CI_bund"] = df["CI_lower"]
 df["CI_top"] = df["CI_upper"]
 
