@@ -5,8 +5,13 @@ import requests
 from datetime import datetime
 import locale
 
-# Sæt til dansk datoformat
-locale.setlocale(locale.LC_TIME, "da_DK.UTF-8")
+# Forsøg at sætte dansk datoformat – fallback til engelsk hvis det fejler (fx på Render)
+# Prøv dansk sprog - ellers brug engelsk fallback (Render tillader ikke "da_DK.UTF-8")
+try:
+    locale.setlocale(locale.LC_TIME, "da_DK.UTF-8")
+except locale.Error:
+    locale.setlocale(locale.LC_TIME, "en_US.UTF-8")
+
 
 st.set_page_config(layout="wide")
 st.title("🍕 Glostrup Pizzaria – Salgsforecast")
