@@ -1,90 +1,60 @@
 import streamlit as st
 import pandas as pd
-import requests
 import altair as alt
-import datetime
+import requests
+from datetime import datetime
+import locale
 
-st.set_page_config(page_title="🍕 Pizza Forecast Dashboard", layout="wide")
-st.title("🍕 Glostrup Pizzaria – Interaktivt 14-dages Forecast")
+# Sæt til dansk datoformat
+locale.setlocale(locale.LC_TIME, "da_DK.UTF-8")
 
-# === Hent og vis live vejr ===
-vejr_url = "https://api.openweathermap.org/data/2.5/weather?lat=55.6667&lon=12.4000&units=metric&appid=4c8b4631a40e4e0d4a2be5ee2023e241"
-vejr_data = requests.get(vejr_url).json()
+st.set_page_config(layout="wide")
+st.title("🍕 Glostrup Pizzaria – Salgsforecast")
+
+# --- Hent data fra backend ---
+URL = "https://pizzaria-backend-fghi.onrender.com/pizza-forecast-14d"
 
 try:
-    temp = vejr_data['main']['temp']
-    beskrivelse = vejr_data['weather'][0]['description']
-except KeyError:
-    temp = 14.0
-    beskrivelse = "Ukendt"
-
-st.markdown(f"### 🌦️ Aktuelt vejr i Glostrup: **{temp:.1f}°C** – *{beskrivelse.title()}*")
-
-# === Hent 14-dages forecast fra API ===
-with st.spinner("Henter forecast fra AI..."):
-    res = requests.get("https://pizzaria-backend-fghi.onrender.com/pizza-forecast-14d")
+    res = requests.get(URL)
     data = res.json()
-    df = pd.DataFrame(data)
+except:
+    st.error("⚠️ Kunne ikke hente data fra backend.")
+    st.stop()
 
-# === Tilføj rigtige datoer for kampagnedropdown ===
-df['dato_dag'] = pd.to_datetime(df['dato']).dt.strftime('%d. %b')
+df = pd.DataFrame(data)
+df["dato"] = pd.to_datetime(df["dato"])
+df["dag_navn"] = df["dato"].dt.strftime("%A %d. %B")
+df["CI_bund"] = df["CI_lower"]
+df["CI_top"] = df["CI_upper"]
 
-# === Brugerinput ===
-st.sidebar.header("🔧 Justér scenarier")
-vejr_temp = st.sidebar.slider("Gennemsnitlig temperatur (°C)", min_value=5, max_value=30, value=15)
-regnvejr = st.sidebar.checkbox("Regnvejr?", value=False)
+# --- Layout ---
+col1, col2 = st.columns([1, 3])
 
-kampagnedage = st.sidebar.multiselect(
-    "📅 Vælg kampagnedage:",
-    options=df['dato_dag'].tolist(),
-    default=[]
-)
+with col1:
+    st.subheader("📅 Periode")
+    st.write(f"{df['dato'].min().strftime('%A %d. %B')} → {df['dato'].max().strftime('%A %d. %B')}")
 
-# === Brug justeringer ===
-for i in range(len(df)):
-    if df.loc[i, 'dato_dag'] in kampagnedage:
-        df.at[i, 'forudsagt_bestillinger'] += 25
-if regnvejr:
-    df['forudsagt_bestillinger'] += 15
+    st.subheader("📊 Oversigt")
+    st.metric("Gennemsnit", f"{df['forudsagt_bestillinger'].mean():.1f}")
+    st.metric("Total", int(df['forudsagt_bestillinger'].sum()))
+    st.metric("Højeste dag", df.loc[df['forudsagt_bestillinger'].idxmax()]["dag_navn"])
+    st.metric("Laveste dag", df.loc[df['forudsagt_bestillinger'].idxmin()]["dag_navn"])
 
-df['CI_lower'] = (df['forudsagt_bestillinger'] * 0.9).astype(int)
-df['CI_upper'] = (df['forudsagt_bestillinger'] * 1.1).astype(int)
+    st.markdown("---")
+    st.caption("Data opdateret automatisk ud fra vejr og dagstype")
 
-# === Vis tabel ===
-st.subheader("📋 Forecast tabel")
-st.dataframe(df)
+with col2:
+    st.subheader("📈 Forventet antal bestillinger de næste 14 dage")
 
-# === Vis graf ===
-st.subheader("📊 Søjlediagram med usikkerhed")
-bar_chart = alt.Chart(df).mark_bar(size=30).encode(
-    x=alt.X('dato:N', title='Dato'),
-    y=alt.Y('forudsagt_bestillinger:Q', title='Bestillinger'),
-    color=alt.condition(
-        alt.datum.forudsagt_bestillinger > 230,
-        alt.value('#ff6961'),
-        alt.value('#4caf50')
-    ),
-    tooltip=['dato', 'forudsagt_bestillinger', 'CI_lower', 'CI_upper']
-).properties(width=900, height=400)
+    chart = alt.Chart(df).mark_bar().encode(
+        x=alt.X('dag_navn:N', sort=df['dag_navn'].tolist(), title='Dato'),
+        y=alt.Y('forudsagt_bestillinger:Q', title='Bestillinger'),
+        color=alt.Color('forudsagt_bestillinger:Q', scale=alt.Scale(scheme='yellowgreenblue'), legend=None),
+        tooltip=['dag_navn', 'forudsagt_bestillinger', 'CI_lower', 'CI_upper']
+    ).properties(width=700, height=400)
 
-ci_band = alt.Chart(df).mark_errorbar(extent='ci').encode(
-    x='dato:N',
-    y='CI_lower:Q',
-    y2='CI_upper:Q'
-)
+    st.altair_chart(chart, use_container_width=True)
 
-st.altair_chart(bar_chart + ci_band, use_container_width=True)
-
-# === Download-knap ===
-st.subheader("📥 Download forecast som Excel")
-excel_df = df.copy()
-excel_file = excel_df.to_excel(index=False)
-
-st.download_button(
-    label="Download Excel-fil",
-    data=excel_file,
-    file_name="pizza_forecast.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
-st.info("💡 Flere funktioner kommer: integreret vagtplan, lokal vejr-API, PDF-download og meget mere!")
+# --- Footer ---
+st.markdown("---")
+st.caption("🔧 Bygget af Jonas – AI Forecast Demo © 2024")
