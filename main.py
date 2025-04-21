@@ -1,4 +1,4 @@
-# glostrup-pizzaria-api/main.py
+# Fil: FastAPI backend – main.py
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -13,18 +13,9 @@ import requests
 app = FastAPI()
 
 # === Hent vejrdata fra OpenWeatherMap ===
+# (Bruges ikke i denne version – temperatur er låst til 17.0)
 def hent_vejrdata():
-    api_key = "4c8b4631a40e4e0d4a2be5ee2023e241"
-    url = f"https://api.openweathermap.org/data/2.5/weather?lat=55.6667&lon=12.4000&units=metric&appid={api_key}"
-    try:
-        response = requests.get(url)
-        data = response.json()
-        temperatur = data['main']['temp']
-        beskrivelse = data['weather'][0]['description']
-        return temperatur, beskrivelse
-    except Exception as e:
-        print("Vejrdata kunne ikke hentes:", e)
-        return 14.0, "ukendt"  # fallback-temp
+    return 17.0, "solskin"
 
 # === Input-skema ===
 class PizzaForecastInput(BaseModel):
@@ -67,22 +58,21 @@ def pizza_forecast(input: PizzaForecastInput):
         "CI_upper": upper
     }
 
-# === NYT ENDPOINT: 14 dages forecast ===
+# === Endpoint: 14 dages forecast ===
 @app.get("/pizza-forecast-14d", response_model=list[PizzaForecastDay])
 def pizza_forecast_14d():
     today = datetime.date.today()
     results = []
-    live_temp, _ = hent_vejrdata()
+    vejr_temp = 17.0  # Fast temperatur for demo
 
     for i in range(14):
         dato = today + datetime.timedelta(days=i)
         dag_i_ugen = dato.weekday()
 
-        # Simulér forhold for hver dag
-        kampagne = int(np.random.rand() < 0.2)
-        vejr_temp = live_temp  # brug aktuel temperatur
+        rng = np.random.default_rng(seed=i)  # Stabil random generator
+        kampagne = int(rng.random() < 0.2)
         helligdag = 1 if dato.month == 12 and dato.day == 25 else 0
-        regnvejr = int(np.random.rand() < 0.4)
+        regnvejr = int(rng.random() < 0.4)
         weekend_aften = int(dag_i_ugen in [4, 5])
 
         X = np.array([[dag_i_ugen, kampagne, vejr_temp, helligdag, regnvejr, weekend_aften]])
@@ -97,7 +87,7 @@ def pizza_forecast_14d():
 
     return results
 
-# === NYT ENDPOINT: Download forecast som Excel-fil ===
+# === Endpoint: Download forecast som Excel-fil ===
 @app.get("/download-forecast")
 def download_forecast():
     forecast = pizza_forecast_14d()

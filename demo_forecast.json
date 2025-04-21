@@ -1,0 +1,87 @@
+[
+    {
+      "dato": "2024-05-01",
+      "forudsagt_bestillinger": 234,
+      "CI_lower": 211,
+      "CI_upper": 257
+    },
+    {
+      "dato": "2024-05-02",
+      "forudsagt_bestillinger": 198,
+      "CI_lower": 178,
+      "CI_upper": 218
+    },
+    {
+      "dato": "2024-05-03",
+      "forudsagt_bestillinger": 212,
+      "CI_lower": 191,
+      "CI_upper": 233
+    },
+    {
+      "dato": "2024-05-04",
+      "forudsagt_bestillinger": 251,
+      "CI_lower": 226,
+      "CI_upper": 276
+    },
+    {
+      "dato": "2024-05-05",
+      "forudsagt_bestillinger": 240,
+      "CI_lower": 216,
+      "CI_upper": 264
+    },
+    {
+      "dato": "2024-05-06",
+      "forudsagt_bestillinger": 190,
+      "CI_lower": 171,
+      "CI_upper": 209
+    },
+    {
+      "dato": "2024-05-07",
+      "forudsagt_bestillinger": 195,
+      "CI_lower": 176,
+      "CI_upper": 215
+    },
+    {
+      "dato": "2024-05-08",
+      "forudsagt_bestillinger": 199,
+      "CI_lower": 179,
+      "CI_upper": 219
+    },
+    {
+      "dato": "2024-05-09",
+      "forudsagt_bestillinger": 205,
+      "CI_lower": 184,
+      "CI_upper": 226
+    },
+    {
+      "dato": "2024-05-10",
+      "forudsagt_bestillinger": 228,
+      "CI_lower": 205,
+      "CI_upper": 251
+    },
+    {
+      "dato": "2024-05-11",
+      "forudsagt_bestillinger": 249,
+      "CI_lower": 224,
+      "CI_upper": 274
+    },
+    {
+      "dato": "2024-05-12",
+      "forudsagt_bestillinger": 243,
+      "CI_lower": 218,
+      "CI_upper": 267
+    },
+    {
+      "dato": "2024-05-13",
+      "forudsagt_bestillinger": 187,
+      "CI_lower": 168,
+      "CI_upper": 206
+    },
+    {
+      "dato": "2024-05-14",
+      "forudsagt_bestillinger": 200,
+      "CI_lower": 180,
+      "CI_upper": 220
+    }
+  ]
+  
