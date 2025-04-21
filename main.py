@@ -1,4 +1,4 @@
-# Fil: FastAPI backend – main.py
+# Fil: main.py (backend)
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -6,37 +6,46 @@ import numpy as np
 import joblib
 import datetime
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import io
-import requests
 
 app = FastAPI()
 
-# === Hent vejrdata fra OpenWeatherMap ===
-# (Bruges ikke i denne version – temperatur er låst til 17.0)
-def hent_vejrdata():
-    return 17.0, "solskin"
+# === CORS ===
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# === Indlæs model ===
+model = joblib.load("pizza_model.joblib")
+
+# === Sundhedstjek ===
+@app.get("/")
+def root():
+    return {"message": "Backend kører!"}
 
 # === Input-skema ===
 class PizzaForecastInput(BaseModel):
-    dag_i_ugen: int           # 0 = mandag, 6 = søndag
-    kampagne: int             # 0 = nej, 1 = ja
-    vejr_temp: float          # grader celsius
-    helligdag: int            # 0 = nej, 1 = ja
-    regnvejr: int             # 0 = nej, 1 = ja
-    weekend_aften: int        # 0 = nej, 1 = ja
+    dag_i_ugen: int
+    kampagne: int
+    vejr_temp: float
+    helligdag: int
+    regnvejr: int
+    weekend_aften: int
 
-# === Output-skema til 14-dages forecast ===
+# === Output til 14-dages forecast ===
 class PizzaForecastDay(BaseModel):
     dato: str
     forudsagt_bestillinger: int
     CI_lower: int
     CI_upper: int
 
-# === Indlæs model ===
-model = joblib.load("pizza_model.joblib")
-
-# === Endpoint: Forudsigning for én dag ===
+# === Endpoint: Forecast for én dag ===
 @app.post("/pizza-forecast")
 def pizza_forecast(input: PizzaForecastInput):
     X = np.array([[
@@ -47,29 +56,25 @@ def pizza_forecast(input: PizzaForecastInput):
         input.regnvejr,
         input.weekend_aften
     ]])
-
     pred = model.predict(X)[0]
-    lower = round(pred * 0.9)
-    upper = round(pred * 1.1)
-
     return {
         "forudsagt_bestillinger": round(pred),
-        "CI_lower": lower,
-        "CI_upper": upper
+        "CI_lower": round(pred * 0.9),
+        "CI_upper": round(pred * 1.1)
     }
 
-# === Endpoint: 14 dages forecast ===
+# === Endpoint: 14-dages forecast ===
 @app.get("/pizza-forecast-14d", response_model=list[PizzaForecastDay])
 def pizza_forecast_14d():
     today = datetime.date.today()
     results = []
-    vejr_temp = 17.0  # Fast temperatur for demo
+    vejr_temp = 17.0
 
     for i in range(14):
         dato = today + datetime.timedelta(days=i)
         dag_i_ugen = dato.weekday()
 
-        rng = np.random.default_rng(seed=i)  # Stabil random generator
+        rng = np.random.default_rng(seed=i)
         kampagne = int(rng.random() < 0.2)
         helligdag = 1 if dato.month == 12 and dato.day == 25 else 0
         regnvejr = int(rng.random() < 0.4)
