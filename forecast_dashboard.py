@@ -7,7 +7,7 @@ import requests
 from datetime import datetime
 
 # === Hent data fra online backend ===
-URL = "https://pizzaria-backend-xxxxx.onrender.com/pizza-forecast-14d"  # <- Erstat med din rigtige URL
+URL = "https://pizzaria-backend-fghi.onrender.com/pizza-forecast-14d"  # <- Erstat med din rigtige URL
 
 try:
     res = requests.get(URL)
