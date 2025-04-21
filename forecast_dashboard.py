@@ -1,16 +1,24 @@
+# Fil: forecast_dashboard.py
+
 import streamlit as st
 import pandas as pd
 import altair as alt
-import json
+import requests
 from datetime import datetime
 
-# === Hent fastlåst demo-data ===
-with open("demo_forecast.json", encoding="utf-8") as f:
-    data = json.load(f)
+# === Hent data fra online backend ===
+URL = "https://pizzaria-backend-xxxxx.onrender.com/pizza-forecast-14d"  # <- Erstat med din rigtige URL
+
+try:
+    res = requests.get(URL)
+    data = res.json()
+except:
+    st.error("⚠️ Kunne ikke hente data fra backend.")
+    st.stop()
 
 # === Opret DataFrame ===
 df = pd.DataFrame(data)
-df["dato"] = pd.date_range(start="2024-05-01", periods=14, freq="D")  # Fast datoer for demo
+df["dato"] = pd.to_datetime(df["dato"])
 
 # === Manuelle danske oversættelser ===
 danske_ugedage = {
@@ -29,23 +37,6 @@ df["dansk_dato"] = df["dag_eng"].map(danske_ugedage) + " d. " + df["dato"].dt.st
 
 df["CI_bund"] = df["CI_lower"]
 df["CI_top"] = df["CI_upper"]
-
-df["forklaring"] = [
-    "Weekend med forventet høj trafik",
-    "Ingen kampagne – normal dag",
-    "Regnvejr – lavere aktivitet",
-    "Fredag aften – høj efterspørgsel",
-    "Kampagnedag",
-    "Søndag – mange takeaway-bestillinger",
-    "Lav temperatur og helligdag",
-    "Tirsdag – stille dag",
-    "Onsdag med vejrskifte",
-    "Stor fodboldkamp i området",
-    "Lokalt marked – øget efterspørgsel",
-    "Lørdag + solskin",
-    "Mandag efter regn – lav trafik",
-    "Torsdag aften – normal"
-][:len(df)]
 
 # === Layout ===
 st.set_page_config(layout="wide")
@@ -127,8 +118,7 @@ chart = alt.Chart(df_vis).mark_line(point=alt.OverlayMarkDef(filled=True, fill='
         alt.Tooltip("dansk_dato", title="Dato"),
         alt.Tooltip("forudsagt_bestillinger", title="Forventet salg"),
         alt.Tooltip("CI_bund", title="95% Nedre grænse"),
-        alt.Tooltip("CI_top", title="95% Øvre grænse"),
-        alt.Tooltip("forklaring", title="Årsag")
+        alt.Tooltip("CI_top", title="95% Øvre grænse")
     ]
 ).properties(height=400)
 
@@ -143,4 +133,4 @@ st.altair_chart(chart + ci_band, use_container_width=True)
 # === Forklaringsliste ===
 st.subheader("📌 Forklaringer pr. dag")
 for i, row in df_vis.iterrows():
-    st.write(f"{row['dansk_dato']}: {row['forklaring']}")
+    st.write(f"{row['dansk_dato']}: Automatisk analyse baseret på data")
