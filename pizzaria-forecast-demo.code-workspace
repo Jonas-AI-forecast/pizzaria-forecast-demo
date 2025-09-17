@@ -1,0 +1,41 @@
+{
+    "folders": [
+        {
+            "name": "Pizzaria Forecast Demo",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "./venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "github.copilot.enable": {
+            "*": true,
+            "python": true
+        },
+        "editor.formatOnSave": true,
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "github.copilot",
+            "github.copilot-chat",
+            "ms-python.black-formatter",
+            "ms-python.pylint"
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "compounds": [
+            {
+                "name": "Launch Full Stack",
+                "configurations": [
+                    "Debug FastAPI Backend",
+                    "Debug Streamlit App"
+                ],
+                "stopAll": true
+            }
+        ]
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "python.formatting.autopep8Args": ["--max-line-length=88"],
+    "python.sortImports.args": ["--profile", "black"],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "editor.rulers": [88],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "github.copilot.enable": {
+        "*": true,
+        "python": true,
+        "javascript": true,
+        "typescript": true,
+        "html": true,
+        "css": true,
+        "json": true,
+        "markdown": true
+    },
+    "github.copilot.advanced": {
+        "debug.overrideEngine": "codex",
+        "debug.testOverrideProxyUrl": "",
+        "debug.overrideProxyUrl": ""
+    },
+    "files.associations": {
+        "*.py": "python",
+        "requirements.txt": "pip-requirements"
+    },
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "python.analysis.extraPaths": [
+        "./venv/lib/python3.12/site-packages"
+    ],
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": true,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/venv": true,
+        "**/.env": true
+    },
+    "search.exclude": {
+        "**/__pycache__": true,
+        "**/venv": true,
+        "**/*.pyc": true
+    }
+}
